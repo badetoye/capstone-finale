@@ -14,12 +14,13 @@ pipeline {
          stage('Build Docker Image') {
               steps {
                   sh 'docker build -t capstone-finale .'
+                  sh 'docker image ls'
               }
          }
          stage('Push Docker Image') {
               steps {
                   withDockerRegistry([url: "", credentialsId: "docker-hub"]) {
-                      sh "docker tag capstone-finale mulero44/capstone-finale"
+                      sh 'docker tag capstone-finale mulero44/capstone-finale'
                       sh 'docker push mulero44/capstone-finale'
                   }
               }
@@ -39,10 +40,10 @@ pipeline {
                   }
               }
         }
-        stage("Cleaning up") {
+        stage("Cleaning dangling files") {
               steps{
                    echo 'Cleaning up...'
-                   sh "docker system prune"
+                   sh "docker system prune -f"
               }
         }
      }
