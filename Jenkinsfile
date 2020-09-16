@@ -14,12 +14,13 @@ pipeline {
          stage('Build Docker Image') {
               steps {
                   sh 'docker build -t capstone-finale .'
+                  sh 'docker image ls'
               }
          }
          stage('Push Docker Image') {
               steps {
                   withDockerRegistry([url: "", credentialsId: "docker-hub"]) {
-                      sh "docker tag capstone-finale mulero44/capstone-finale"
+                      sh 'docker tag capstone-finale mulero44/capstone-finale'
                       sh 'docker push mulero44/capstone-finale'
                   }
               }
@@ -29,8 +30,7 @@ pipeline {
                   echo 'Deploying to AWS...'
                   withAWS(credentials: 'aws', region: 'us-west-2') {
                       sh "aws eks --region us-west-2 update-kubeconfig --name capstone-finale"
-                      sh "kubectl config use-context "
-                      sh "kubectl set image deployments/capstone-finale capstone-finale=mulero44/capstone-finale:latest"
+                      sh "kubectl config use-context arn:aws:eks:us-west-2:481413889855:cluster/capstone-finale"
                       sh "kubectl apply -f deployment.yml"
                       sh "kubectl get nodes"
                       sh "kubectl get deployment"
@@ -39,10 +39,10 @@ pipeline {
                   }
               }
         }
-        stage("Cleaning up") {
+        stage("Cleaning dangling files") {
               steps{
                    echo 'Cleaning up...'
-                   sh "docker system prune"
+                   sh "docker system prune -f"
               }
         }
      }
